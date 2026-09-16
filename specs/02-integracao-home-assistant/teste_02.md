@@ -2,7 +2,7 @@
 
 ## Status
 
-Planejado.
+Aprovado.
 
 ## Comando
 
@@ -29,4 +29,7 @@ correspondente, sem nenhuma chamada de rede real.
 
 ## Resultado
 
-Pendente.
+`flutter test test/ha_service_test.dart` — 9/9 testes passaram, cobrindo
+todos os cenários previstos (montagem de URL/headers/corpo, extração da
+fala, 401, timeout, falha de conexão, resposta inesperada, e
+`testConnection` true/false). `flutter analyze` sem apontamentos.

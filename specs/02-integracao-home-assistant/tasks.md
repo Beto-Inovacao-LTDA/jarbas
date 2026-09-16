@@ -1,8 +1,8 @@
 # Tasks — Integração com o Home Assistant
 
-- [ ] 3.1 Implementar `HaService.sendCommand()` (RF-12, RF-13)
-- [ ] 3.2 Implementar `HaService.testConnection()`
-- [ ] 3.3 Implementar tratamento de erros (RF-14): 401, timeout, falha de
+- [x] 3.1 Implementar `HaService.sendCommand()` (RF-12, RF-13)
+- [x] 3.2 Implementar `HaService.testConnection()`
+- [x] 3.3 Implementar tratamento de erros (RF-14): 401, timeout, falha de
       conexão, resposta inesperada
 
 ## Dependências

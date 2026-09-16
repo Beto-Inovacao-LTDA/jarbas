@@ -1,6 +1,6 @@
 # Requirements — Integração com o Home Assistant
 
-**Status:** Rascunho — aguardando aprovação antes de implementar
+**Status:** Implementada e validada por testes unitários
 **Depende de:** `00-arquitetura-base`, `01-dados-e-persistencia`
 
 ## Objetivo
@@ -35,12 +35,12 @@ Access Token (Bearer). Tanto o modo sob demanda quanto o Modo Jarbas
   Tailscale (fora de escopo geral do produto).
 
 ## Critérios de Aceite
-- [ ] `HaService.sendCommand(texto)` faz `POST /api/conversation/process`
+- [x] `HaService.sendCommand(texto)` faz `POST /api/conversation/process`
       com o corpo e header corretos e retorna a fala de resposta
       (`response.speech.plain.speech`).
-- [ ] `HaService.testConnection(url, token)` retorna sucesso/falha sem
+- [x] `HaService.testConnection(url, token)` retorna sucesso/falha sem
       persistir nada.
-- [ ] 401 (token inválido), timeout e falha de conexão geram erros
+- [x] 401 (token inválido), timeout e falha de conexão geram erros
       distintos e identificáveis pelo chamador.
-- [ ] Resposta HTTP com formato inesperado (sem quebrar o app) é tratada
+- [x] Resposta HTTP com formato inesperado (sem quebrar o app) é tratada
       como erro.

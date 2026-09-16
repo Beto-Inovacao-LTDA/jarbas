@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Segredos locais (token de longa duração do Home Assistant p/ testes)
+/secrets/

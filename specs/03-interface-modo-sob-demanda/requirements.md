@@ -1,6 +1,6 @@
 # Requirements — Interface do Modo Sob Demanda
 
-**Status:** Rascunho — aguardando aprovação antes de implementar
+**Status:** Implementada e validada no Note 9 (testes automatizados + manual ponta a ponta)
 **Depende de:** `01-dados-e-persistencia`, `02-integracao-home-assistant`
 
 ## Objetivo
@@ -43,12 +43,12 @@ Modo Jarbas (spec `04`) reaproveita o mesmo `speech_to_text` e o mesmo
   botão "Ativar Modo Jarbas" apareça nesta tela.
 
 ## Critérios de Aceite
-- [ ] Um comando de voz simples ("ligar luz da sala", com entidade já
+- [x] Um comando de voz simples ("ligar luz da sala", com entidade já
       cadastrada no HA) funciona de ponta a ponta no modo sob demanda.
-- [ ] Um atalho configurado dispara o mesmo resultado sem usar o microfone.
-- [ ] Erros de `HaService` (401, timeout, falha de conexão, resposta
+- [x] Um atalho configurado dispara o mesmo resultado sem usar o microfone.
+- [x] Erros de `HaService` (401, timeout, falha de conexão, resposta
       inesperada) aparecem como mensagem de status distinta na tela
       principal, sem derrubar o app.
-- [ ] Configuração de URL/token sobrevive a reiniciar o app.
-- [ ] "Testar conexão" valida URL + token contra a API do HA antes de
+- [x] Configuração de URL/token sobrevive a reiniciar o app.
+- [x] "Testar conexão" valida URL + token contra a API do HA antes de
       salvar.

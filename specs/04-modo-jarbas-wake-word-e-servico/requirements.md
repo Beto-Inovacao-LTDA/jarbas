@@ -1,6 +1,10 @@
 # Requirements — Modo Jarbas (Wake Word e Serviço)
 
-**Status:** Rascunho — aguardando aprovação antes de implementar
+**Status:** Código implementado (foreground service, orquestração,
+integração com `porcupine_flutter`/`speech_to_text`/`HaService`, UI).
+**Bloqueado para validação final**: conta na Picovoice em revisão manual
+("caso de uso comercial"), sem AccessKey/wake word customizada ainda — ver
+`teste_04.md`.
 **Depende de:** `02-integracao-home-assistant`, `03-interface-modo-sob-demanda`
 
 ## Objetivo
@@ -45,8 +49,11 @@ uso contínuo. Reaproveita o mesmo `speech_to_text` (spec `03`) e o mesmo
 - [ ] Modo Jarbas, uma vez ativado num segundo aparelho, detecta a wake
       word e completa o mesmo fluxo de comando sem interação manual além
       da fala.
-- [ ] Wake word engine falha ao iniciar → usuário é notificado, Modo Jarbas
-      não fica ativado silenciosamente.
+- [x] Wake word engine falha ao iniciar → usuário é notificado, Modo Jarbas
+      não fica ativado silenciosamente. Validado no Note 9 (sem AccessKey
+      configurado): notificação sobe e desce em <1s, tela mostra "Modo
+      Jarbas inativo — Configure o AccessKey da Picovoice nas
+      configurações."
 - [ ] Reconhecimento de voz sem resultado após a wake word retorna à escuta
       sem enviar comando vazio.
 - [ ] Consumo de bateria validado em repouso por um período prolongado no

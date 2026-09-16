@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import 'ha_service.dart';
+import 'jarbas_service.dart';
 import 'settings_screen.dart';
 import 'settings_store.dart';
 
@@ -29,10 +31,16 @@ class _HomeScreenState extends State<HomeScreen> {
   String _statusMessage = '';
   bool _speechInitialized = false;
 
+  bool _jarbasActive = false;
+  bool _jarbasBusy = false;
+  String? _jarbasMessage;
+
   @override
   void initState() {
     super.initState();
     _loadShortcuts();
+    FlutterForegroundTask.addTaskDataCallback(_onJarbasData);
+    _syncJarbasState();
   }
 
   Future<void> _loadShortcuts() async {
@@ -133,9 +141,61 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadShortcuts();
   }
 
+  Future<void> _syncJarbasState() async {
+    final active = await FlutterForegroundTask.isRunningService;
+    if (!mounted) return;
+    setState(() => _jarbasActive = active);
+  }
+
+  void _onJarbasData(Object data) {
+    if (data is! Map) return;
+    final status = data['status'] as String?;
+    final message = data['message'] as String?;
+    if (!mounted) return;
+    setState(() {
+      if (message != null) _jarbasMessage = message;
+      if (status == 'error') {
+        _jarbasActive = false;
+      } else if (status != null) {
+        _jarbasActive = true;
+      }
+    });
+  }
+
+  Future<void> _toggleJarbas() async {
+    setState(() => _jarbasBusy = true);
+    if (_jarbasActive) {
+      await JarbasService.stop();
+      if (!mounted) return;
+      setState(() {
+        _jarbasActive = false;
+        _jarbasBusy = false;
+        _jarbasMessage = null;
+      });
+      return;
+    }
+
+    final permission = await FlutterForegroundTask.checkNotificationPermission();
+    if (permission != NotificationPermission.granted) {
+      await FlutterForegroundTask.requestNotificationPermission();
+    }
+
+    final result = await JarbasService.start();
+    if (!mounted) return;
+    setState(() {
+      _jarbasBusy = false;
+      if (result is ServiceRequestFailure) {
+        _jarbasMessage = 'Falha ao ativar o Modo Jarbas.';
+      } else {
+        _jarbasActive = true;
+      }
+    });
+  }
+
   @override
   void dispose() {
     _speech.cancel();
+    FlutterForegroundTask.removeTaskDataCallback(_onJarbasData);
     super.dispose();
   }
 
@@ -160,7 +220,28 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              ListTile(
+                key: const Key('jarbas_tile'),
+                leading: Icon(
+                  Icons.record_voice_over,
+                  color: _jarbasActive ? Colors.green : Colors.grey,
+                ),
+                title: Text(
+                  _jarbasActive ? 'Modo Jarbas ativo' : 'Modo Jarbas inativo',
+                  key: const Key('jarbas_indicator'),
+                ),
+                subtitle: _jarbasMessage != null
+                    ? Text(_jarbasMessage!, key: const Key('jarbas_message'))
+                    : null,
+                trailing: Switch(
+                  key: const Key('jarbas_toggle'),
+                  value: _jarbasActive,
+                  onChanged: _jarbasBusy ? null : (_) => _toggleJarbas(),
+                ),
+              ),
+              const Divider(height: 8),
+              const SizedBox(height: 8),
               GestureDetector(
                 key: const Key('mic_button'),
                 onTap: sending ? null : _toggleListening,

@@ -7,6 +7,7 @@ import 'package:ha_voice_app/settings_store.dart';
 class _FakeSettingsStore extends SettingsStore {
   String? url;
   String? token;
+  String? porcupineAccessKey;
   List<Shortcut> shortcuts = [];
 
   @override
@@ -20,6 +21,13 @@ class _FakeSettingsStore extends SettingsStore {
 
   @override
   Future<void> setToken(String value) async => token = value;
+
+  @override
+  Future<String?> getPorcupineAccessKey() async => porcupineAccessKey;
+
+  @override
+  Future<void> setPorcupineAccessKey(String value) async =>
+      porcupineAccessKey = value;
 
   @override
   Future<List<Shortcut>> getShortcuts() async => shortcuts;
@@ -74,11 +82,16 @@ void main() {
       'http://192.168.15.13:8123',
     );
     await tester.enterText(find.byKey(const Key('token_field')), 'meutoken');
+    await tester.enterText(
+      find.byKey(const Key('porcupine_access_key_field')),
+      'minha-access-key',
+    );
     await tester.tap(find.byKey(const Key('save_button')));
     await tester.pumpAndSettle();
 
     expect(store.url, 'http://192.168.15.13:8123');
     expect(store.token, 'meutoken');
+    expect(store.porcupineAccessKey, 'minha-access-key');
   });
 
   testWidgets('Testar conexão mostra sucesso via HaService', (tester) async {
@@ -134,12 +147,28 @@ void main() {
       find.byKey(const Key('shortcut_phrase_field')),
       'trancar tudo',
     );
+    final settingsScrollable = find
+        .descendant(
+          of: find.byKey(const Key('settings_list')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('add_shortcut_button')),
+      100,
+      scrollable: settingsScrollable,
+    );
     await tester.tap(find.byKey(const Key('add_shortcut_button')));
     await tester.pumpAndSettle();
 
     expect(find.text('Trancar tudo'), findsOneWidget);
     expect(store.shortcuts, hasLength(1));
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('remove_shortcut_0')),
+      100,
+      scrollable: settingsScrollable,
+    );
     await tester.tap(find.byKey(const Key('remove_shortcut_0')));
     await tester.pumpAndSettle();
 

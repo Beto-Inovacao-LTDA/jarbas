@@ -97,16 +97,20 @@ do manifest base para não reabrir o arquivo depois.
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">ts.net</domain>
-    </domain-config>
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>
 ```
 
 ## Decisões Técnicas
 
-- Cleartext HTTP é aceitável porque o tráfego já roda dentro do túnel
-  WireGuard do Tailscale (RNF-03) — não expõe a rede local.
+- Cleartext HTTP é liberado globalmente (`base-config`), não só para
+  `ts.net`. O app precisa falar tanto com o HA na rede local (IP
+  `192.168.x.x`, que muda por DHCP) quanto via Tailscale (RNF-03, já
+  criptografado por WireGuard). Como o Network Security Config do Android só
+  casa `domain-config` por hostname/IP exato (não aceita CIDR nem IP
+  dinâmico), restringir por domínio exigiria IP fixo reservado no roteador —
+  optamos por liberar cleartext geral, aceitável porque o app só se conecta
+  à rede doméstica do próprio usuário e ao seu tailnet.
 - Nenhuma dependência de serviço de nuvem de terceiros além do próprio HA e
   do motor de wake word local (RNF-05).
 

@@ -103,6 +103,21 @@ void main() {
     });
 
     test(
+      'erro inesperado (ex.: URL inválida/sem host) lança HaConnectionException, sem travar o chamador',
+      () async {
+        final client = MockClient((request) async {
+          throw ArgumentError('No host specified in URI /api/conversation/process');
+        });
+        final service = HaService(client: client);
+
+        expect(
+          () => service.sendCommand('', token, 'acender'),
+          throwsA(isA<HaConnectionException>()),
+        );
+      },
+    );
+
+    test(
       'corpo sem o campo esperado lança HaUnexpectedResponseException',
       () async {
         final client = MockClient((request) async {
@@ -141,5 +156,17 @@ void main() {
 
       expect(await service.testConnection(baseUrl, token), isFalse);
     });
+
+    test(
+      'retorna false para URL vazia/inválida, sem travar o chamador',
+      () async {
+        final client = MockClient((request) async {
+          throw ArgumentError('No host specified in URI /api/');
+        });
+        final service = HaService(client: client);
+
+        expect(await service.testConnection('', token), isFalse);
+      },
+    );
   });
 }

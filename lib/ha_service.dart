@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -64,11 +63,7 @@ class HaService {
           )
           .timeout(_timeout);
       return response.statusCode >= 200 && response.statusCode < 300;
-    } on TimeoutException {
-      return false;
-    } on SocketException {
-      return false;
-    } on http.ClientException {
+    } catch (_) {
       return false;
     }
   }
@@ -91,9 +86,7 @@ class HaService {
           .timeout(_timeout);
     } on TimeoutException {
       throw const HaTimeoutException();
-    } on SocketException {
-      throw const HaConnectionException();
-    } on http.ClientException {
+    } catch (_) {
       throw const HaConnectionException();
     }
   }

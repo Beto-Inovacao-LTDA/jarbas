@@ -35,6 +35,14 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # Ver specs/00-arquitetura-base/design.md
+  speech_to_text: ^7.0.0
+  http: ^1.2.2
+  shared_preferences: ^2.3.3
+  permission_handler: ^11.3.1
+  porcupine_flutter: ^4.0.0
+  flutter_foreground_task: ^8.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

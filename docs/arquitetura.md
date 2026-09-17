@@ -2,10 +2,10 @@
 
 ## Estado atual
 
-Specs `00`–`04` implementadas e validadas no Note 9 (spec `04` com uma
-ressalva: bloqueada pra validação final da detecção real de wake word — ver
-seção "Riscos e mitigação" e `specs/04-modo-jarbas-wake-word-e-servico/
-teste_04.md`). Spec `05` (testes e distribuição) ainda não iniciada.
+Specs `00`–`04` e `06` implementadas e validadas de ponta a ponta no Note 9
+— incluindo a migração do motor de wake word de Picovoice/Porcupine pra
+Vosk (offline, sem gatekeeping de conta) e uma rodada de melhorias visuais
+(spec `06`). Spec `05` (testes e distribuição) ainda não iniciada.
 
 Este documento descreve a arquitetura **como implementada**, não mais um
 alvo planejado. Para uma visão geral rápida + instruções de setup, ver o
@@ -52,12 +52,12 @@ plugin `flutter_foreground_task`.
 
 | Componente | Arquivo | Responsabilidade | Spec |
 |---|---|---|---|
-| Entry point | `lib/main.dart` | Tema, inicialização do `MaterialApp` e da porta de comunicação do foreground task | 00 |
-| Persistência | `lib/settings_store.dart` | `Shortcut` + `SettingsStore` sobre `SharedPreferences` (URL, token, atalhos, AccessKey Picovoice, autostart) | 01 |
+| Entry point | `lib/main.dart` | Tema (`AppBarTheme` na cor do app), inicialização do `MaterialApp` e da porta de comunicação do foreground task | 00, 06 |
+| Persistência | `lib/settings_store.dart` | `Shortcut` + `SettingsStore` sobre `SharedPreferences` (URL, token, atalhos, autostart) | 01 |
 | Integração HA | `lib/ha_service.dart` | `HaService.sendCommand`/`testConnection`, exceções tipadas | 02 |
-| UI principal | `lib/home_screen.dart` | Microfone, atalhos, indicador/switch do Modo Jarbas, navegação | 03 |
-| UI configurações | `lib/settings_screen.dart` | URL, token, AccessKey, CRUD de atalhos | 03 |
-| Wake word + orquestração | `lib/jarbas_service.dart` | `JarbasTaskHandler`: ciclo de vida do Porcupine, captura pós-wake-word, envio ao HA, roda dentro do foreground service | 04 |
+| UI principal | `lib/home_screen.dart` | Microfone, grade de atalhos (caixas arredondadas), indicador/switch do Modo Jarbas, navegação | 03, 06 |
+| UI configurações | `lib/settings_screen.dart` | URL, token, CRUD de atalhos | 03 |
+| Wake word + orquestração | `lib/jarbas_service.dart` | `JarbasTaskHandler`: ciclo de vida do motor de wake word (Vosk), captura pós-wake-word, envio ao HA, roda dentro do foreground service | 04, 06 |
 
 ## Contexto de ambiente do usuário
 
@@ -82,9 +82,13 @@ plugin `flutter_foreground_task`.
   problema de nomenclatura/alias no HA, não do app (validado na prática:
   nomes de entidade com `_` não são reconhecíveis por voz, porque a fala
   nunca produz o underscore).
-- Wake word 100% offline via Porcupine (Picovoice), rodando dentro de um
-  foreground service (`flutter_foreground_task`) com isolate própria —
-  necessário pra sobreviver com a tela apagada/app em segundo plano.
+- Wake word 100% offline via Vosk (`vosk_flutter_service`), rodando dentro
+  de um foreground service (`flutter_foreground_task`) com isolate própria
+  — necessário pra sobreviver com a tela apagada/app em segundo plano.
+  Migrado de Picovoice/Porcupine em 2026-09-17 porque a conta na Picovoice
+  ficou presa em revisão manual de "caso de uso comercial" sem previsão de
+  liberação — Vosk não exige conta/API key. Ver
+  `specs/04-modo-jarbas-wake-word-e-servico/design.md`.
 - Inicialização preguiçosa do `speech_to_text` no modo sob demanda (só no
   primeiro toque do microfone) — evita pedir permissão antes da hora e
   simplifica testes de widget que não tocam no microfone.
@@ -94,18 +98,32 @@ plugin `flutter_foreground_task`.
   `catch` específico demais deixou passar um `ArgumentError` de URL
   inválida e travou a UI com o spinner girando pra sempre, sem crash nem
   mensagem. Esse princípio guiou também o `JarbasTaskHandler`: qualquer
-  falha ao iniciar o Porcupine desliga o próprio serviço e notifica a UI,
-  nunca fica "pendurado".
+  falha ao iniciar o motor de wake word desliga o próprio serviço e
+  notifica a UI, nunca fica "pendurado".
+- **Plugins que dependem de bindings do Flutter só podem ser
+  inicializados depois que o ciclo de vida da task de segundo plano
+  começa** (dentro de `onStart()`), nunca como inicializador de campo de
+  classe nem antes disso — `HapticFeedback`/`SystemSound` (API padrão) não
+  funcionam de jeito nenhum numa isolate sem `Activity` (silenciosamente),
+  e um `AudioPlayer()` criado cedo demais lançava uma exceção engolida por
+  um `try/catch` de best-effort. Ver `specs/06-melhorias-de-interface/
+  design.md`.
+- **Nunca reiniciar o mesmo `AudioRecord` nativo (Vosk) depois que outro
+  app usou o microfone** — a lib nativa lança uma exceção não capturável
+  do lado Dart nesse cenário, derrubando o processo inteiro. O
+  `JarbasTaskHandler` sempre descarta e recria o `SpeechService` a cada
+  ciclo de captura, em vez de reiniciar o antigo. Ver
+  `specs/04-modo-jarbas-wake-word-e-servico/design.md`.
 - Sem publicação em loja — distribuição via `adb install` (spec `05`).
 
 ## Riscos e mitigação
 
 | Risco | Status / Mitigação |
 |---|---|
-| Falso-positivo/negativo da wake word customizada "OK Jarbas" | **Ainda não validado** — bloqueado pela revisão de conta da Picovoice (ver abaixo). Fallback pesquisado: `open_wake_word` (openWakeWord via ONNX Runtime), sem gatekeeping de conta. |
-| Consumo de bateria do foreground service 24/7 | Pendente de validação prolongada no Note 9 (spec `04`/`05`) |
-| Compatibilidade do Android antigo com `porcupine_flutter`/`flutter_foreground_task` | Build e instalação confirmados no Note 9 (Android 10); conflito de `compileSdkVersion` entre os dois plugins resolvido via patch no `android/build.gradle.kts` |
-| **Conta Picovoice em revisão manual** ("caso de uso comercial"), sem AccessKey liberado | Bloqueio ativo desde 2026-09-16, sem previsão. Código do Modo Jarbas está pronto e validado no cenário de falha controlada (sem AccessKey, o serviço se autodesliga e notifica o usuário — não fica "ativo" sem detecção de verdade). Ver `specs/04-modo-jarbas-wake-word-e-servico/teste_04.md` |
+| Falso-positivo/negativo da wake word "OK Jarbas" (Vosk) | Validado em uso normal de sala no Note 9 — detectada corretamente em múltiplos ciclos seguidos. Taxa de falso-positivo em uso prolongado (ruído de fundo constante) ainda não medida. |
+| Consumo de bateria do foreground service 24/7 | Pendente de validação prolongada no Note 9 (spec `05`) |
+| Compatibilidade do Android antigo com `vosk_flutter_service`/`flutter_foreground_task` | Build e instalação confirmados no Note 9 (Android 10, API 29) — `minSdkVersion 21` do `vosk_flutter_service` é compatível |
+| Crash do `SpeechService` nativo do Vosk (`AudioRecord`) ao reiniciar após uso concorrente do microfone | Corrigido — ver "Decisões técnicas centrais" acima e `specs/04.../design.md` |
 
 ## Índice das specs
 

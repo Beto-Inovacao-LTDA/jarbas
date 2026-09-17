@@ -2,14 +2,51 @@
 
 ## Wake word
 
-- [ ] 7.1 Criar conta/AccessKey na Picovoice, treinar wake word "Jarbas"
-      — **bloqueado**: conta em revisão manual da Picovoice ("verificação de
-      caso de uso comercial"), sem previsão. Ver `teste_04.md`.
-- [ ] 7.2 Validar taxa de detecção/falso-positivo da wake word treinada
-      (decisão em aberto — só prosseguir após validar) — depende de 7.1
-- [x] 7.3 Integrar `porcupine_flutter` em `jarbas_service.dart`
+- [x] 7.1 ~~Criar conta/AccessKey na Picovoice~~ — abandonado em
+      2026-09-16: conta recusada (revisão manual de "verificação de caso de
+      uso comercial", sem previsão). Ver `teste_04.md`. Migrado pra Vosk.
+- [x] 7.2 Validar taxa de detecção/falso-positivo da wake word "ok jarbas"
+      com o modelo Vosk pt-BR num aparelho real — validado em 2026-09-17:
+      detectada corretamente em 4 tentativas seguidas, uso normal de sala
+      no Note 9. Taxa de falso-positivo em uso prolongado (ruído de fundo)
+      ainda não medida — reavaliar se aparecer na prática.
+- [x] 7.3 Integrar motor de wake word (`vosk_flutter_service`) em
+      `jarbas_service.dart`
 - [x] 7.4 Implementar callback de wake-word-detectada expondo evento para
       a UI/orquestração
+
+## Migração de Porcupine pra Vosk (implementada em 2026-09-17)
+
+- [x] 7.5 Baixar o modelo Vosk pt-BR pequeno e embuti-lo em
+      `assets/vosk/`, adicionar a entrada em `pubspec.yaml` (`flutter:
+      assets:`)
+- [x] 7.6 Adicionar dependência de wake word Vosk e remover
+      `porcupine_flutter` do `pubspec.yaml` — pacote usado:
+      `vosk_flutter_service` (não o `vosk_flutter_2` do plano original nem
+      o `vosk_flutter` oficial; ver `design.md`, "Escolha do pacote Vosk",
+      pro porquê de cada um ter sido descartado)
+- [x] 7.7 Reescrever `JarbasTaskHandler` em `lib/jarbas_service.dart`:
+      trocar `PorcupineManager` por `ModelLoader.loadFromAssets` +
+      `createModel` + `createRecognizer(grammar: ['ok jarbas', '[unk]'])` +
+      `initSpeechService`, mantendo o mesmo fluxo de feedback/captura/envio
+- [x] 7.8 Remover a pasta `assets/porcupine/` e o campo de AccessKey da
+      Picovoice (`settings_store.dart`, `settings_screen.dart`,
+      `test/settings_screen_test.dart`)
+- [x] 7.9 Atualizar mensagens de erro do fluxo de start (permissão de
+      microfone negada / erro genérico de inicialização do Vosk)
+- [x] 7.10 Ajustes de build não previstos no plano original: `compileSdk`
+      subido pra 37 em `android/app/build.gradle.kts` (exigido pelo
+      `permission_handler_android` transitivo), `permission_handler`
+      atualizado pra `^13.0.0`, `android/app/proguard-rules.pro` criado,
+      patch obsoleto de `compileSdkVersion` do Porcupine removido de
+      `android/build.gradle.kts`
+- [x] 7.11 Corrigir dois crashes reais encontrados na validação em
+      dispositivo (`onDestroy` sem `stop()` antes do `dispose()`; reinício
+      do mesmo `AudioRecord` do Vosk depois do `speech_to_text` usar o
+      microfone) — ver `design.md`, "Bugs de crash corrigidos"
+- [x] 7.12 Trocar feedback tátil (`HapticFeedback`/`SystemSound`, sem
+      efeito na isolate de segundo plano) pelo pacote `vibration` — ver
+      `design.md`, "Feedback tátil roda numa isolate sem Activity"
 
 ## Foreground service
 
@@ -29,18 +66,19 @@
 - [x] 9.6 Indicador visual de estado ativo/inativo na tela principal
       (RF-20)
 
-## Pendente quando a Picovoice liberar a conta (tarefa 7.1)
+## Pendente pra validação final
 
-- [ ] Treinar "OK Jarbas" (idioma Portuguese, plataforma Android) no
-      Picovoice Console, baixar `ok_jarbas_android.ppn`
-- [ ] Baixar `porcupine_params_pt.pv` (modelo de idioma) do repositório do
-      Porcupine
-- [ ] Colocar os dois arquivos em `assets/porcupine/` (ver README nessa
-      pasta)
-- [ ] Adicionar as duas entradas em `flutter: assets:` no `pubspec.yaml`
-- [ ] Preencher o AccessKey na tela de Configurações do app
-- [ ] Rodar o teste manual completo de `teste_04.md` (detecção, ciclos
-      repetidos, timeout de silêncio, consumo de bateria)
+- [x] Rodar `flutter pub get`/`flutter analyze`/`flutter test` após a
+      migração pra Vosk — tudo passando (19/19 testes)
+- [x] Instalar no aparelho dedicado (Note 9) — `adb install` funcionou,
+      confirma compatibilidade de `minSdkVersion`
+- [x] Validar detecção real de "ok jarbas" falando de verdade no aparelho
+      — detectada corretamente em 4 ciclos seguidos
+- [x] Ciclo completo (wake word → comando → HA → volta a escutar) — "ligar
+      spot mesa" executou de verdade no HA, repetido sem crash
+- [x] Desativar Modo Jarbas — encerra de forma limpa, sem crash
+- [ ] Validação de consumo de bateria em repouso por período prolongado
+      (algumas horas) — não feito nesta sessão
 
 ## Dependências
 

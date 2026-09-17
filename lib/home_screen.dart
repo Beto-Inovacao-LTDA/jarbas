@@ -271,24 +271,61 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               const Divider(height: 32),
               Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  children: _shortcuts
-                      .map(
-                        (s) => OutlinedButton(
-                          key: Key('shortcut_${s.label}'),
-                          onPressed: sending
-                              ? null
-                              : () => _sendCommand(s.phrase),
-                          child: Text(s.label, textAlign: TextAlign.center),
-                        ),
-                      )
-                      .toList(),
+                child: GridView.builder(
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        mainAxisExtent: 56,
+                      ),
+                  itemCount: _shortcuts.length,
+                  itemBuilder: (context, index) {
+                    final s = _shortcuts[index];
+                    return _ShortcutTile(
+                      key: Key('shortcut_${s.label}'),
+                      label: s.label,
+                      onTap: sending ? null : () => _sendCommand(s.phrase),
+                    );
+                  },
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShortcutTile extends StatelessWidget {
+  const _ShortcutTile({super.key, required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(12);
+    return Material(
+      color: Theme.of(context).colorScheme.primary,
+      borderRadius: borderRadius,
+      child: InkWell(
+        borderRadius: borderRadius,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Center(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ),

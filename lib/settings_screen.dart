@@ -19,7 +19,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final _urlController = TextEditingController();
   final _tokenController = TextEditingController();
-  final _porcupineAccessKeyController = TextEditingController();
   final _shortcutLabelController = TextEditingController();
   final _shortcutPhraseController = TextEditingController();
 
@@ -38,7 +37,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     _urlController.dispose();
     _tokenController.dispose();
-    _porcupineAccessKeyController.dispose();
     _shortcutLabelController.dispose();
     _shortcutPhraseController.dispose();
     super.dispose();
@@ -47,12 +45,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _load() async {
     final url = await _store.getBaseUrl();
     final token = await _store.getToken();
-    final porcupineAccessKey = await _store.getPorcupineAccessKey();
     final shortcuts = await _store.getShortcuts();
     setState(() {
       _urlController.text = url ?? '';
       _tokenController.text = token ?? '';
-      _porcupineAccessKeyController.text = porcupineAccessKey ?? '';
       _shortcuts = shortcuts;
       _loading = false;
     });
@@ -77,7 +73,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _save() async {
     await _store.setBaseUrl(_urlController.text);
     await _store.setToken(_tokenController.text);
-    await _store.setPorcupineAccessKey(_porcupineAccessKeyController.text);
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
@@ -158,19 +153,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Text(_testResultMessage!),
                 ),
             ],
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'AccessKey da Picovoice (Modo Jarbas)',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          TextField(
-            key: const Key('porcupine_access_key_field'),
-            controller: _porcupineAccessKeyController,
-            obscureText: true,
-            decoration: const InputDecoration(
-              hintText: 'obtido em console.picovoice.ai',
-            ),
           ),
           const SizedBox(height: 12),
           FilledButton(

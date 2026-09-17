@@ -7,7 +7,6 @@ import 'package:ha_voice_app/settings_store.dart';
 class _FakeSettingsStore extends SettingsStore {
   String? url;
   String? token;
-  String? porcupineAccessKey;
   List<Shortcut> shortcuts = [];
 
   @override
@@ -21,13 +20,6 @@ class _FakeSettingsStore extends SettingsStore {
 
   @override
   Future<void> setToken(String value) async => token = value;
-
-  @override
-  Future<String?> getPorcupineAccessKey() async => porcupineAccessKey;
-
-  @override
-  Future<void> setPorcupineAccessKey(String value) async =>
-      porcupineAccessKey = value;
 
   @override
   Future<List<Shortcut>> getShortcuts() async => shortcuts;
@@ -82,16 +74,11 @@ void main() {
       'http://192.168.15.13:8123',
     );
     await tester.enterText(find.byKey(const Key('token_field')), 'meutoken');
-    await tester.enterText(
-      find.byKey(const Key('porcupine_access_key_field')),
-      'minha-access-key',
-    );
     await tester.tap(find.byKey(const Key('save_button')));
     await tester.pumpAndSettle();
 
     expect(store.url, 'http://192.168.15.13:8123');
     expect(store.token, 'meutoken');
-    expect(store.porcupineAccessKey, 'minha-access-key');
   });
 
   testWidgets('Testar conexão mostra sucesso via HaService', (tester) async {

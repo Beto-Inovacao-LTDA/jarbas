@@ -12,12 +12,14 @@ Este diretório organiza a implementação do zero do `ha_voice_app` seguindo
 4. `03-interface-modo-sob-demanda`
 5. `04-modo-jarbas-wake-word-e-servico`
 6. `05-testes-e-distribuicao`
+7. `06-melhorias-de-interface`
 
 Ordem por dependência funcional: `00` estabelece esqueleto/config Android;
 `01` e `02` são a camada de dados/integração usada por toda a UI; `03`
 entrega o modo sob demanda (usa `01`+`02`); `04` entrega o Modo Jarbas
 (reaproveita o fluxo de voz e o `HaService` de `03`/`02`); `05` valida e
-empacota tudo.
+empacota tudo; `06` é uma rodada de polimento visual/UX sobre o que `03` e
+`04` já entregaram, feita depois da validação em dispositivo real.
 
 ## Padrão de cada spec
 

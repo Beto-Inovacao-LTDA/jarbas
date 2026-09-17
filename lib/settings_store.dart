@@ -21,7 +21,6 @@ class SettingsStore {
   static const _keyToken = 'ha_token';
   static const _keyShortcuts = 'ha_shortcuts';
   static const _keyJarbasAutostart = 'jarbas_autostart';
-  static const _keyPorcupineAccessKey = 'porcupine_access_key';
 
   Future<String?> getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
@@ -61,16 +60,6 @@ class SettingsStore {
     final prefs = await SharedPreferences.getInstance();
     final raw = jsonEncode(shortcuts.map((s) => s.toJson()).toList());
     await prefs.setString(_keyShortcuts, raw);
-  }
-
-  Future<String?> getPorcupineAccessKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyPorcupineAccessKey);
-  }
-
-  Future<void> setPorcupineAccessKey(String value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyPorcupineAccessKey, value);
   }
 
   Future<bool> getJarbasAutostart() async {

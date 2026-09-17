@@ -6,7 +6,10 @@ plugins {
 
 android {
     namespace = "com.betoinovacao.ha_voice_app"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android (dependência do vosk_flutter_service, spec
+    // 04) exige compileSdk 37; flutter.compileSdkVersion ainda default pra
+    // 36 nesta versão do Flutter.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

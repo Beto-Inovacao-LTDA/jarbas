@@ -13,10 +13,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = ColorScheme.fromSeed(seedColor: Colors.deepPurple);
     return MaterialApp(
       title: 'Jarbas',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      theme: ThemeData(
+        colorScheme: colorScheme,
+        appBarTheme: AppBarTheme(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: Colors.white,
+        ),
+      ),
       home: const HomeScreen(),
     );
   }

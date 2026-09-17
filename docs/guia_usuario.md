@@ -69,12 +69,9 @@ dizer **"OK Jarbas"**. Ao ouvir, ele avisa com uma vibração/bipe curto,
 escuta o comando seguinte e manda pro Home Assistant — sem você tocar em
 nada.
 
-> **Aviso:** o Modo Jarbas depende de uma configuração adicional
-> (AccessKey da Picovoice, empresa que fornece o motor de reconhecimento
-> da palavra de ativação) que pode não estar pronta ainda no seu app. Se o
-> switch não ficar ligado e aparecer uma mensagem pedindo pra configurar o
-> AccessKey, esse recurso ainda está sendo preparado — fale com quem
-> mantém o app.
+A detecção da palavra de ativação funciona **100% offline** (não precisa de
+internet nem de conta em nenhum serviço externo) — o modelo de
+reconhecimento já vem embutido no app.
 
 **Para ativar:**
 1. Na tela principal, toque no interruptor ao lado de "Modo Jarbas".
@@ -126,9 +123,11 @@ Bateria → sem restrições.
   perguntar na primeira vez que você toca no botão).
 
 **Modo Jarbas não liga / desliga sozinho**
-- Verifique se o AccessKey da Picovoice está preenchido em Configurações.
-  Se a mensagem pedir pra configurar isso, é sinal de que o recurso ainda
-  não foi habilitado nesse app — fale com quem mantém o Jarbas.
+- Confirme que você deu permissão de microfone ao app — sem ela, o Modo
+  Jarbas não consegue nem começar a escutar e se desliga sozinho, com uma
+  mensagem explicando o motivo.
+- Se a mensagem mencionar erro ao carregar o modelo de reconhecimento, pode
+  ser uma instalação corrompida do app — tente reinstalar.
 
 ## Precisa de ajuda?
 
